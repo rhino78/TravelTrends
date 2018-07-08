@@ -1,39 +1,70 @@
+import csv
+
 import praw
 from iso3166 import countries
 
-reddit = praw.Reddit(client_id='JgiAaoEUbf86tA',
-                     client_secret='bz4rt2sUhhQs0suOR_2uq4QuIhA',
-                     password='thomas08',
-                     user_agent='testscript by /u/rhino_78',
-                     username='rhino_78')
+import PrawCreds
+
+reddit = praw.Reddit(client_id=PrawCreds.client_id,
+                     client_secret=PrawCreds.client_secret,
+                     password=PrawCreds.password,
+                     user_agent=PrawCreds.user_agent,
+                     username=PrawCreds.username)
 
 travel = []
 for submission in reddit.subreddit('Travel').hot(limit=5000):
         travel.append(submission.title)
 
-c = []
-d = {}
-d["none"] = 0
+country_list = []
+cities = []
+country_dict = {}
+city_dict = {}
+
 for i in countries:
-    c.append(i.name)
+    country_list.append(i.name)
+
+with open('world_cities.csv') as csvfile:
+    rdr = csv.reader(csvfile, delimiter=',')
+    for row in rdr:
+        cities.append(row[0])
+
+
+for i in countries:
+    country_list.append(i.name)
+
+cities.remove('Ho')
+cities.remove('Wa')
+cities.remove('Bo')
+cities.remove('Mon')
+cities.remove('San')
+cities.remove('Bar')
+cities.remove('Bor')
+cities.remove('Best')
 
 for t in travel:
-    foundone = False
-    for word in t.split(' '):
-        if word in c:
-            foundone = True
-            if word in d:
-                d[word] = d[word] + 1
+    for c in country_list:
+        if c in t:
+            if c in country_dict:
+                country_dict[c] = country_dict[c] + 1
             else:
-                d[word] = 1
-    if not foundone:
-        d["none"] = d["none"] + 1
+                country_dict[c] = 1
+    for c in cities:
+        if c in t:
+            if c in city_dict:
+                city_dict[c] = city_dict[c] + 1
+            else:
+                city_dict[c] = 1
 
 
-d_sorted = sorted(d.items(), key=lambda x: x[1], reverse=True)
-for k in d_sorted:
-    print(k)
+d_sorted = sorted(country_dict.items(), key=lambda x: x[1], reverse=True)
+c_sorted = sorted(city_dict.items(), key=lambda x: x[1], reverse=True)
 
+print('----------')
 
+for k in range(0, 15):
+    print(d_sorted[k])
 
+print('----------')
 
+for k in range(0, 15):
+    print(c_sorted[k])
